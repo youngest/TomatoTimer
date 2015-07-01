@@ -1,1 +1,4 @@
+obj/
+tests/runner
+tests/runner.cpp
 vendor/
