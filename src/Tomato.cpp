@@ -3,27 +3,59 @@
 
 Tomato::Tomato(TomatoDisplay *display, uint16_t ticksPerSecond)
 {
+  this->onBreak = false;
+  this->breaksTaken = 0;
   this->clock = 0;
-  this->clockSeconds = 20 * SECONDS_PER_MINUTE;
+  this->clockSeconds = TOMATO_TIME;
+  this->ticking = false;
   this->display = display;
   this->ticksPerSecond = ticksPerSecond;
 
   this->updateDisplay();
 }
 
+void Tomato::reset()
+{
+  if (this->clockSeconds == 0) {
+    this->resetTimer();
+  }
+
+  this->ticking = !this->ticking;
+  this->updateDisplay();
+}
+
+void Tomato::resetTimer()
+{
+  this->onBreak = !this->onBreak;
+
+  if (this->onBreak)
+    this->takeABreak();
+  else
+    this->clockSeconds = TOMATO_TIME;
+}
+
+void Tomato::takeABreak()
+{
+  this->breaksTaken = (this->breaksTaken + 1) % 4;
+  this->clockSeconds = this->breaksTaken ? BREAK_TIME : LONG_BREAK_TIME;
+}
+
 void Tomato::tick()
 {
-  this->clock += 1;
+  if (this->ticking) {
+    this->clock += 1;
 
-  if (this->clock == this->ticksPerSecond) {
-    this->decrementSeconds();
+    if (this->clock == this->ticksPerSecond) {
+      this->decrementSeconds();
+    }
   }
 }
 
 void Tomato::decrementSeconds()
 {
-  if (this->clockSeconds) {
+  if (this->ticking) {
     this->clockSeconds -= 1;
+    this->ticking = this->clockSeconds > 0;
     this->updateDisplay();
   }
 

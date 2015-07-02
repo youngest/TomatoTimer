@@ -7,9 +7,13 @@
 
 #define SECONDS_PER_MINUTE 60
 #define TICKS_PER_SECOND 490
+#define BREAK_TIME 5 * SECONDS_PER_MINUTE
+#define LONG_BREAK_TIME 20 * SECONDS_PER_MINUTE
+#define TOMATO_TIME 20 * SECONDS_PER_MINUTE
 
 class Tomato {
 public:
+  void reset();
   void tick();
   Tomato(TomatoDisplay *display = NULL, uint16_t ticksPerSecond = TICKS_PER_SECOND);
 
@@ -26,10 +30,15 @@ private:
   uint16_t lastSecond;
   uint16_t startSecond;
   uint16_t ticksPerSecond;
+  uint8_t breaksTaken;
+  bool onBreak;
+  bool ticking;
 
   TomatoDisplay *display;
 
   void decrementSeconds();
+  void takeABreak();
+  void resetTimer();
   inline void updateDisplay();
 };
 

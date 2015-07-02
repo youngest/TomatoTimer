@@ -15,41 +15,106 @@ public:
 
   void testInitialization()
   {
-    TS_ASSERT_EQUALS(this->seconds, 20 * SECONDS_PER_MINUTE);
+    TS_ASSERT_EQUALS(this->seconds, TOMATO_TIME);
   }
 
-  void testTickOnce()
+  void testMustResetBeforeTicking()
   {
-    this->tomato->tick();
+    this->tickSeconds(1);
+    TS_ASSERT_EQUALS(this->seconds, TOMATO_TIME);
 
-    TS_ASSERT_EQUALS(this->seconds, 20 * SECONDS_PER_MINUTE);
+    this->resetAndTickSeconds(1);
+    TS_ASSERT_EQUALS(this->seconds, TOMATO_TIME - 1);
   }
 
   void testCanTickOneSecond()
   {
-    this->tickSeconds(1);
+    this->resetAndTickSeconds(1);
 
-    TS_ASSERT_EQUALS(this->seconds, 20 * SECONDS_PER_MINUTE - 1);
+    TS_ASSERT_EQUALS(this->seconds, TOMATO_TIME - 1);
   }
 
   void testCanTickToZero()
   {
-    this->tickSeconds(20 * SECONDS_PER_MINUTE);
+    this->resetAndTickSeconds(TOMATO_TIME);
 
     TS_ASSERT_EQUALS(this->seconds, 0);
   }
 
   void testCannotTickPastZero()
   {
-    this->tickSeconds(20 * SECONDS_PER_MINUTE + 1);
+    this->resetAndTickSeconds(TOMATO_TIME + 1);
 
     TS_ASSERT_EQUALS(this->seconds, 0);
+  }
+
+  void testResetAfterTomatoStartsBreak()
+  {
+    this->resetAndTickSeconds(TOMATO_TIME);
+    this->reset();
+
+    TS_ASSERT_EQUALS(this->seconds, BREAK_TIME);
+  }
+
+  void testResetAfterBreakStartsTomato()
+  {
+    this->resetAndTickSeconds(TOMATO_TIME);
+    this->resetAndTickSeconds(BREAK_TIME);
+    this->reset();
+
+    TS_ASSERT_EQUALS(this->seconds, TOMATO_TIME);
+  }
+
+  void testResetAfterFourthTomatoStartsLongBreak()
+  {
+    this->resetAndTickSeconds(TOMATO_TIME);
+    this->resetAndTickSeconds(BREAK_TIME);
+    this->resetAndTickSeconds(TOMATO_TIME);
+    this->resetAndTickSeconds(BREAK_TIME);
+    this->resetAndTickSeconds(TOMATO_TIME);
+    this->resetAndTickSeconds(BREAK_TIME);
+    this->resetAndTickSeconds(TOMATO_TIME);
+    this->reset();
+
+    TS_ASSERT_EQUALS(this->seconds, LONG_BREAK_TIME);
+  }
+
+  void testBreakAfterLongBreakIsStandardDuration()
+  {
+    this->resetAndTickSeconds(TOMATO_TIME);
+    this->resetAndTickSeconds(BREAK_TIME);
+    this->resetAndTickSeconds(TOMATO_TIME);
+    this->resetAndTickSeconds(BREAK_TIME);
+    this->resetAndTickSeconds(TOMATO_TIME);
+    this->resetAndTickSeconds(BREAK_TIME);
+    this->resetAndTickSeconds(TOMATO_TIME);
+    this->resetAndTickSeconds(LONG_BREAK_TIME);
+    this->resetAndTickSeconds(TOMATO_TIME);
+    this->reset();
+
+    TS_ASSERT_EQUALS(this->seconds, BREAK_TIME);
+  }
+
+  void reset()
+  {
+    this->tomato->reset();
+  }
+
+  void tick()
+  {
+    this->tomato->tick();
+  }
+
+  void resetAndTickSeconds(int seconds)
+  {
+    this->reset();
+    this->tickSeconds(seconds);
   }
 
   void tickSeconds(int seconds)
   {
     for (int i=0; i < seconds * TICKS_PER_SECOND; i++)
-      this->tomato->tick();
+      this->tick();
   }
 
   void displaySeconds(uint16_t seconds)
