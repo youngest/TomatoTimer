@@ -2,6 +2,7 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 
+const int DEBOUNCE_DELAY = 50;
 static volatile int count = 0;
 static volatile bool tick = false;
 
@@ -26,9 +27,9 @@ Ardumato::Ardumato(int outputEnable, int serialPin, int latchPin, int clockPin, 
   this->clockPin = clockPin;
   this->buttonPin = buttonPin;
   this->tomato = new Tomato(this, 1);
-  this->tomato->reset();
 
   this->setupClock();
+  this->setupInputs();
   this->setupShiftRegisters();
 }
 
@@ -43,6 +44,11 @@ void Ardumato::setupClock()
   TCCR2B = 0x05;        //Timer2 Control Reg B: Timer Prescaler set to 128
 }
 
+void Ardumato::setupInputs()
+{
+  pinMode(this->buttonPin, INPUT);
+}
+
 void Ardumato::setupShiftRegisters()
 {
   pinMode(this->outputEnable, OUTPUT);
@@ -55,12 +61,40 @@ void Ardumato::setupShiftRegisters()
 
 void Ardumato::loop()
 {
+  if (this->debounceButton()) {
+    this->tomato->reset();
+  }
+
   if (tick) {
     tick = false;
     this->tomato->tick();
   }
 
   this->displayTime();
+}
+
+bool Ardumato::debounceButton()
+{
+  static int buttonState;
+  static int lastButtonState = LOW;
+  static long lastDebounceTime = 0;
+  bool button = false;
+  int reading = digitalRead(this->buttonPin);
+
+  if (reading != lastButtonState)
+    lastDebounceTime = millis();
+
+  if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY) {
+    if (reading != buttonState) {
+      buttonState = reading;
+
+      if (buttonState == HIGH)
+        button = true;
+    }
+  }
+
+  lastButtonState = reading;
+  return button;
 }
 
 void Ardumato::displaySeconds(uint16_t seconds)

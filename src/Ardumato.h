@@ -10,6 +10,7 @@ class Ardumato: public TomatoDisplay {
 public:
   Ardumato(int outputEnable = 11, int serialPin = 6, int latchPin = 7, int clockPin = 10, int buttonPin = 4);
   void loop();
+  bool debounceButton();
   void displaySeconds(uint16_t);
 
 private:
@@ -26,6 +27,7 @@ private:
 
   void displayTime();
   void setupClock();
+  void setupInputs();
   void setupShiftRegisters();
   void writeSymbolInSegment(uint16_t symbol, uint16_t segment);
 };
