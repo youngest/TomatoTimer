@@ -1,8 +1,7 @@
 #ifndef _TOMATO_H
 #define _TOMATO_H
 
-#include <cstdlib>
-#include "Symbol.h"
+#include <Arduino.h>
 #include "TomatoDisplay.h"
 
 #define SECONDS_PER_MINUTE 60
@@ -18,21 +17,14 @@ public:
   Tomato(TomatoDisplay *display = NULL, uint16_t ticksPerSecond = TICKS_PER_SECOND);
 
 private:
-  int OutputEnable;
-  int SerialPin;
-  int LatchPin;
-  int ClockPin;
-  int ClockDriver;
-  int ClockInterrupt;
-
   volatile uint16_t clock;
   volatile uint16_t clockSeconds;
   uint16_t lastSecond;
   uint16_t startSecond;
   uint16_t ticksPerSecond;
-  uint8_t breaksTaken;
-  bool onBreak;
-  bool ticking;
+  volatile uint8_t breaksTaken;
+  volatile bool onBreak;
+  volatile bool ticking;
 
   TomatoDisplay *display;
 

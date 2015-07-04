@@ -10,6 +10,7 @@ _SRCDEPS=Symbol.h Tomato.h TomatoDisplay.h
 SRCDEPS=$(patsubst %,$(SRCDIR)/%,$(_DEPS))
 _SRCS=Tomato.cpp
 SRCS=$(patsubst %,$(SRCDIR)/%,$(_SRCS))
+CFLAGS=-I $(SRCDIR)
 
 TEST_CFLAGS=-I $(CXXTEST) -I $(SRCDIR)
 TEST_GENERATOR=$(CXXTEST)/bin/cxxtestgen
@@ -22,7 +23,7 @@ $(OBJDIR)/:
 	mkdir $(OBJDIR)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(OBJDIR) $(SRCDEPS)
-	$(CC) -c -o $@ $<
+	$(CC) -c -o $@ $< $(CFLAGS)
 
 $(TEST_GENERATOR):
 	./install-dependencies.sh
