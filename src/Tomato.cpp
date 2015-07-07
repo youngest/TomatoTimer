@@ -1,16 +1,19 @@
 #include "Tomato.h"
+#include "TomatoAlarm.h"
 #include "TomatoDisplay.h"
 
-Tomato::Tomato(TomatoDisplay *display, uint16_t ticksPerSecond)
+Tomato::Tomato(TomatoAlarm *alarm, TomatoDisplay *display, uint16_t ticksPerSecond)
 {
   this->onBreak = false;
   this->breaksTaken = 0;
   this->clock = 0;
   this->clockSeconds = TOMATO_TIME;
   this->ticking = false;
+  this->alarm = alarm;
   this->display = display;
   this->ticksPerSecond = ticksPerSecond;
 
+  this->fireAlarm();
   this->updateDisplay();
 }
 
@@ -58,6 +61,11 @@ void Tomato::decrementSeconds()
   this->updateDisplay();
 
   this->clock = 0;
+}
+
+void Tomato::fireAlarm()
+{
+  if (this->alarm) this->alarm->fireAlarm();
 }
 
 void Tomato::updateDisplay()

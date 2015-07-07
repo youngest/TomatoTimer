@@ -6,7 +6,7 @@ _OBJ=Tomato.o
 OBJ=$(patsubst %,$(OBJDIR)/%,$(_OBJ))
 
 SRCDIR=src
-_SRCDEPS=Symbol.h Tomato.h TomatoDisplay.h
+_SRCDEPS=Symbol.h Tomato.h TomatoAlarm.h TomatoDisplay.h
 SRCDEPS=$(patsubst %,$(SRCDIR)/%,$(_DEPS))
 _SRCS=Tomato.cpp
 SRCS=$(patsubst %,$(SRCDIR)/%,$(_SRCS))

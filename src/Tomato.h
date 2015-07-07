@@ -2,6 +2,7 @@
 #define _TOMATO_H
 
 #include <Arduino.h>
+#include "TomatoAlarm.h"
 #include "TomatoDisplay.h"
 
 #define SECONDS_PER_MINUTE 60
@@ -14,7 +15,7 @@ class Tomato {
 public:
   void reset();
   void tick();
-  Tomato(TomatoDisplay *display = NULL, uint16_t ticksPerSecond = TICKS_PER_SECOND);
+  Tomato(TomatoAlarm *alarm = NULL, TomatoDisplay *display = NULL, uint16_t ticksPerSecond = TICKS_PER_SECOND);
 
 private:
   volatile uint16_t clock;
@@ -26,11 +27,13 @@ private:
   volatile bool onBreak;
   volatile bool ticking;
 
+  TomatoAlarm *alarm;
   TomatoDisplay *display;
 
   void decrementSeconds();
   void takeABreak();
   void resetTimer();
+  inline void fireAlarm();
   inline void updateDisplay();
 };
 

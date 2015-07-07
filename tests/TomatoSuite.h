@@ -1,21 +1,28 @@
 #include <cxxtest/TestSuite.h>
 #include <Tomato.h>
+#include <TomatoAlarm.h>
 #include <TomatoDisplay.h>
 
-class TomatoSuite : public CxxTest::TestSuite, public TomatoDisplay
+class TomatoSuite : public CxxTest::TestSuite, public TomatoAlarm, public TomatoDisplay
 {
+  bool alarmTriggered;
   uint16_t seconds;
   Tomato *tomato;
 
 public:
   void setUp()
   {
-    this->tomato = new Tomato(this);
+    this->tomato = new Tomato(this, this);
   }
 
   void testInitialization()
   {
     TS_ASSERT_EQUALS(this->seconds, TOMATO_TIME);
+  }
+
+  void testAlarmTriggeredOnInitialization()
+  {
+    TS_ASSERT_EQUALS(this->alarmTriggered, true);
   }
 
   void testMustResetBeforeTicking()
@@ -120,6 +127,11 @@ public:
   void displaySeconds(uint16_t seconds)
   {
     this->seconds = seconds;
+  }
+
+  void fireAlarm()
+  {
+    this->alarmTriggered = true;
   }
 
 };
