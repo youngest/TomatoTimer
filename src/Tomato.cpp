@@ -58,6 +58,7 @@ void Tomato::decrementSeconds()
 {
   this->clockSeconds -= 1;
   this->ticking = this->clockSeconds > 0;
+  if (!this->ticking) this->fireAlarm();
   this->updateDisplay();
 
   this->clock = 0;

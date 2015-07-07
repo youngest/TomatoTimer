@@ -55,6 +55,14 @@ public:
     TS_ASSERT_EQUALS(this->seconds, 0);
   }
 
+  void testAlarmFiredAtBeginningOfBreak()
+  {
+    this->clearAlarm();
+    this->resetAndTickSeconds(TOMATO_TIME);
+
+    TS_ASSERT_EQUALS(this->alarmTriggered, true);
+  }
+
   void testResetAfterTomatoStartsBreak()
   {
     this->resetAndTickSeconds(TOMATO_TIME);
@@ -132,6 +140,11 @@ public:
   void fireAlarm()
   {
     this->alarmTriggered = true;
+  }
+
+  void clearAlarm()
+  {
+    this->alarmTriggered = false;
   }
 
 };
