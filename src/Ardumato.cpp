@@ -6,27 +6,29 @@ const int DEBOUNCE_DELAY = 50;
 static volatile int count = 0;
 static volatile bool tick = false;
 
-ISR(TIMER2_OVF_vect)
+ISR(TIMER1_OVF_vect)
 {
   count++;
 
-  if (count == 999) {
+  if (count == 100) {
     tick = true;
     count = 0;
   }
 
-  TCNT2 = 130;
-  TIFR2 = 0x00;
+  TCNT1 = -625;
+  TIFR1 = 0x00;
 }
 
-Ardumato::Ardumato(int outputEnable, int serialPin, int latchPin, int clockPin, int buttonPin)
+Ardumato::Ardumato(int outputEnable, int serialPin, int latchPin, int clockPin, int buttonPin, int buzzerPin)
 {
   this->outputEnable = outputEnable;
   this->serialPin = serialPin;
   this->latchPin = latchPin;
   this->clockPin = clockPin;
   this->buttonPin = buttonPin;
-  this->tomato = new Tomato(this, 1);
+  this->buzzerPin = buzzerPin;
+  this->alarmTriggered = false;
+  this->tomato = new Tomato(this, this, 1);
 
   this->setupClock();
   this->setupInputs();
@@ -35,18 +37,18 @@ Ardumato::Ardumato(int outputEnable, int serialPin, int latchPin, int clockPin, 
 
 void Ardumato::setupClock()
 {
-  //Setup Timer2 to fire every 1ms
-  TCCR2B = 0x00;        //Disbale Timer2 while we set it up
-  TCNT2  = 130;         //Reset Timer Count to 130 out of 255
-  TIFR2  = 0x00;        //Timer2 INT Flag Reg: Clear Timer Overflow Flag
-  TIMSK2 = 0x01;        //Timer2 INT Reg: Timer2 Overflow Interrupt Enable
-  TCCR2A = 0x00;        //Timer2 Control Reg A: Wave Gen Mode normal
-  TCCR2B = 0x05;        //Timer2 Control Reg B: Timer Prescaler set to 128
+  TCCR1B = 0x00;  // Disable Timer1
+  TCNT1 = -625;   // Set Timer1 Count to overflow after 625 ticks
+  TIFR1 = 0x00;   // Clear Timer1 Interrupt flags
+  TIMSK1 = 0x01;  // Enable Timer1 Overflow Interrupt
+  TCCR1A = 0x00;  // Timer1 Control Reg A, normal mode
+  TCCR1B = 0x04;  //Timer1 Control Reg B: Timer Prescaler set to 256
 }
 
 void Ardumato::setupInputs()
 {
   pinMode(this->buttonPin, INPUT);
+  pinMode(this->buzzerPin, OUTPUT);
 }
 
 void Ardumato::setupShiftRegisters()
@@ -71,6 +73,7 @@ void Ardumato::loop()
   }
 
   this->displayTime();
+  this->playAlarm();
 }
 
 bool Ardumato::debounceButton()
@@ -102,6 +105,11 @@ void Ardumato::displaySeconds(uint16_t seconds)
   this->seconds = seconds;
 }
 
+void Ardumato::fireAlarm()
+{
+  this->alarmTriggered = true;
+}
+
 void Ardumato::displayTime()
 {
   int minute = this->seconds / 60;
@@ -127,4 +135,24 @@ void Ardumato::writeSymbolInSegment(uint16_t symbol, uint16_t segment)
   digitalWrite(this->latchPin, HIGH);
 
   delay(1);
+}
+
+void Ardumato::playAlarm()
+{
+  static int alarmCycle = 3;
+  static long nextAlarmTime = 0;
+
+  if (this->alarmTriggered) {
+    if (alarmCycle > 0) {
+      if (millis() > nextAlarmTime) {
+        alarmCycle -= 1;
+        nextAlarmTime = millis() + 1000;
+        tone(this->buzzerPin, 1024, 500);
+      }
+    } else {
+      alarmCycle = 3;
+      nextAlarmTime = 0;
+      this->alarmTriggered = false;
+    }
+  }
 }
